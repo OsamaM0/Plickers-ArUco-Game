@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="ArUco Classroom Quiz - Interactive learning game using ArUco markers for real-time student responses">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ArUco Quiz">
+    
+    <title>ArUco Classroom Quiz - Interactive Learning Game</title>
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Favicon (optional - add if available) -->
+    <!-- <link rel="icon" type="image/png" href="favicon.png"> -->
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                    <rect width="40" height="40" fill="#6366f1" rx="8"></rect>
+                    <rect x="8" y="8" width="24" height="24" fill="white" rx="2"></rect>
+                    <rect x="12" y="12" width="6" height="6" fill="#6366f1"></rect>
+                    <rect x="22" y="12" width="6" height="6" fill="#6366f1"></rect>
+                    <rect x="12" y="22" width="6" height="6" fill="#6366f1"></rect>
+                </svg>
+                <h1>ArUco Quiz Game</h1>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" data-mode="teacher">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Teacher Mode
+                </button>
+                <button class="mode-btn" data-mode="student">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Student Mode
+                </button>
+            </div>
+        </header>
+
+        <!-- Teacher Mode -->
+        <div id="teacherMode" class="mode-content active">
+            <div class="section-header">
+                <h2>Generate ArUco Markers for Quiz</h2>
+                <p class="subtitle">Create markers for students to answer questions</p>
+            </div>
+
+            <div class="generator-container">
+                <div class="settings-panel">
+                    <div class="card">
+                        <h3>Add Student Marker</h3>
+                        
+                        <div class="form-group">
+                            <label for="teacher-dict">Dictionary:</label>
+                            <select id="teacher-dict" class="input-field">
+                                <optgroup label="Standard Dictionaries">
+                                    <option value="4x4_1000" data-width="4" data-height="4">4x4 (Best for beginners)</option>
+                                    <option value="5x5_1000" data-width="5" data-height="5" selected>5x5 (Recommended)</option>
+                                    <option value="6x6_1000" data-width="6" data-height="6">6x6 (Advanced)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacher-id">Marker ID:</label>
+                            <input type="number" id="teacher-id" class="input-field" min="0" max="999" value="1">
+                            <small>Each student needs a unique ID</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teacher-size">Size (mm):</label>
+                            <input type="number" id="teacher-size" class="input-field" min="50" max="500" value="70">
+                            <small>Recommended: 75-200mm</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="student-name">Student Name:</label>
+                            <input type="text" id="student-name" class="input-field" placeholder="Enter student name" required>
+                        </div>
+
+                        <button class="btn btn-primary generate-btn" onclick="addMarkerToList()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add to List
+                        </button>
+                    </div>
+
+                    <div class="card markers-list-card">
+                        <div class="list-header">
+                            <h3>Students List (<span id="markersCount">0</span>)</h3>
+                            <button class="btn-icon" onclick="clearAllMarkers()" id="clearAllBtn" disabled title="Clear All">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="markersList" class="markers-list">
+                            <div class="no-markers">
+                                <p>No markers added yet</p>
+                                <small>Add students using the form above</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="exportMarkersToPdf()" id="exportPdfBtn" disabled>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="12" y1="18" x2="12" y2="12"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
+                            </svg>
+                            Export All to PDF
+                        </button>
+                    </div>
+
+                    <div class="card info-card">
+                        <h3>📚 How It Works</h3>
+                        <div class="info-list">
+                            <div class="info-item">
+                                <span class="answer-badge answer-a">A</span>
+                                <span>Normal orientation (↑)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="answer-badge answer-b">B</span>
+                                <span>Right side up (→)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="answer-badge answer-c">C</span>
+                                <span>Upside down (↓)</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="answer-badge answer-d">D</span>
+                                <span>Left side up (←)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-panel">
+                    <div class="card">
+                        <div class="marker-preview">
+                            <div class="marker-id-display" id="markerIdDisplay">ID: 1</div>
+                            <div class="student-name-display" id="studentNameDisplay"></div>
+                            <div id="markerPreview" class="marker-svg-container">
+                                <!-- Marker SVG will be generated here -->
+                            </div>
+                        </div>
+                        <div class="orientation-guide">
+                            <div class="guide-arrow">↑ Top (Answer A)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Mode -->
+        <div id="studentMode" class="mode-content">
+            <div class="section-header">
+                <h2>Scan Your Answer</h2>
+                <p class="subtitle">Point your marker to the camera with your answer facing up</p>
+            </div>
+
+            <div class="scanner-container">
+                <div class="settings-panel">
+                    <div class="card">
+                        <h3>Scanner Settings</h3>
+                        
+                        <div class="form-group">
+                            <label for="student-dict">Dictionary:</label>
+                            <select id="student-dict" class="input-field">
+                                <option>DICT_4X4_50</option>
+                                <option>DICT_4X4_100</option>
+                                <option>DICT_4X4_250</option>
+                                <option>DICT_4X4_1000</option>
+                                <option>DICT_5X5_250</option>
+                                <option selected>DICT_5X5_1000</option>
+                                <option>DICT_6X6_250</option>
+                                <option>DICT_6X6_1000</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="student-camera">Camera:</label>
+                            <select id="student-camera" class="input-field">
+                                <option value="user">Front Camera</option>
+                                <option value="environment" selected>Rear Camera</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-success" onclick="startScanning()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                            Start Scanning
+                        </button>
+
+                        <button class="btn btn-warning" onclick="clearResults()" style="margin-top: 10px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Clear Results
+                        </button>
+
+                        <div class="stats-card">
+                            <h4>Detected Markers</h4>
+                            <div id="detectedCount" class="stat-number">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="video-panel">
+                    <div class="card">
+                        <div class="video-container">
+                            <video id="videoInput" playsinline muted autoplay></video>
+                            <canvas id="canvasOutput"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-panel">
+                    <div class="card">
+                        <h3>Live Results Board</h3>
+                        <div id="resultsBoard" class="results-board">
+                            <div class="no-results">
+                                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                    <path d="M9 9h.01M15 9h.01M9 15h6"></path>
+                                </svg>
+                                <p>No markers detected yet</p>
+                                <small>Point your ArUco marker to the camera</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Files - Order is important! -->
+    <script src="aruco-generator.js"></script>
+    <script src="aruco-detector.js"></script>
+    <script src="src/app.js"></script>
+    <script async src="opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script src="utils.js"></script>
+</body>
+</html>
